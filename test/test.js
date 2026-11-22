@@ -8,7 +8,7 @@ async function runTests() {
     try {
         // Test 1: Successful API call
         const res1 = await request(app).get('/api/greet?name=DevOps');
-        assert.strictEqual(res1.status, 404);
+        assert.strictEqual(res1.status, 200);
         assert.strictEqual(res1.body.message, 'Hello, DevOps! Welcome to the DevOps API.');
         console.log("✅ Test 1 Passed: Successful API call");
 

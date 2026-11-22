@@ -5,7 +5,7 @@ A basic Node.js API with a frontend interface, designed to demonstrate a complet
 
 ## Tech Stack
 *   **Backend:** Node.js, Express
-*   **Frontend:** HTML, Vanilla JS
+*   **Frontend:** HTML,
 *   **Testing:** Node Assert, Supertest
 *   **CI/CD:** GitHub Actions
 
