@@ -1,0 +1,20 @@
+{
+  "name": "devops-project-1",
+  "version": "1.0.0",
+  "description": "A simple API app for CI pipeline testing",
+  "main": "index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "node test/test.js"
+  },
+  "keywords": [],
+  "author": "Rajan Kumar Gupta",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "express": "^5.3.0"
+  },
+  "devDependencies": {
+    "supertest": "^7.3.2"
+  }
+}
