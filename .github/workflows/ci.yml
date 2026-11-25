@@ -1,93 +1,92 @@
-
 # ==========================================================
-# API CI PIPELINE
+# API CI PIPELINE (PRODUCTION GRADE)
 # ==========================================================
 # Purpose:
 # This pipeline automatically checks the API whenever code
 # is pushed to the main branch or a pull request is created.
 #
 # CI (Continuous Integration):
-# Automatically installs dependencies and runs API tests
+# Automatically lints, tests, and generates coverage reports
 # to identify errors before code is merged into main.
 # ==========================================================
 
-# Name displayed in the GitHub Actions workflow dashboard.
 name: API CI Pipeline
-
 
 # ==========================================================
 # PIPELINE TRIGGERS
 # ==========================================================
-# Define the GitHub events that trigger this workflow.
-
 on:
-
-  # Trigger the pipeline whenever code is pushed to main.
   push:
     branches: [ "main" ]
-
-  # Trigger the pipeline whenever a pull request targets main.
-  # This helps verify changes before merging them into main.
   pull_request:
     branches: [ "main" ]
-
 
 # ==========================================================
 # JOBS
 # ==========================================================
-# Jobs define the tasks that GitHub Actions must execute.
 jobs:
 
-  # Job identifier: build-and-test
-  # This job installs dependencies and executes API tests.
-  build-and-test:
-
-    # Select the GitHub-hosted Ubuntu virtual machine.
-    # The job runs inside a fresh Ubuntu environment.
+  # ========================================================
+  # JOB 1: LINTING
+  # ========================================================
+  # Checks code for syntax errors, bad formatting, and bugs.
+  # Runs in parallel with the build-and-test job to save time.
+  lint:
     runs-on: ubuntu-latest
-
-
-    # ========================================================
-    # STEPS
-    # ========================================================
-    # Steps are executed sequentially inside this job.
     steps:
-
-    # --------------------------------------------------------
     # STEP 1: CHECKOUT SOURCE CODE
-    # --------------------------------------------------------
-    # Download the repository code into the GitHub Actions runner.
-    # Without this step, the runner cannot access your project files.
     - name: Checkout Code
       uses: actions/checkout@v4
 
-
-    # --------------------------------------------------------
-    # STEP 2: SETUP NODE.JS
-    # --------------------------------------------------------
-    # Install and configure Node.js version 18.
-    # This ensures the application runs using the expected
-    # Node.js runtime environment.
+    # STEP 2: SETUP NODE.JS (WITH CACHING)
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
         node-version: '18'
+        cache: 'npm' # Caches dependencies to speed up future runs
 
-
-    # --------------------------------------------------------
     # STEP 3: INSTALL PROJECT DEPENDENCIES
-    # --------------------------------------------------------
-    # Install the packages defined in package.json.
-    # These dependencies are required to run and test the API.
+    # Using 'npm ci' for deterministic, fast, production-ready installs
     - name: Install Dependencies
-      run: npm install
+      run: npm ci
 
+    # STEP 4: RUN LINTER
+    - name: Run ESLint
+      run: npm run lint
 
-    # --------------------------------------------------------
-    # STEP 4: RUN API TESTS
-    # --------------------------------------------------------
-    # Execute the test script defined in package.json.
-    # If tests fail, this step returns a non-zero exit code,
-    # causing the GitHub Actions job to fail.
+  # ========================================================
+  # JOB 2: BUILD AND TEST
+  # ========================================================
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+
+    # STEP 1: CHECKOUT SOURCE CODE
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    # STEP 2: SETUP NODE.JS (WITH CACHING)
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+
+    # STEP 3: INSTALL PROJECT DEPENDENCIES
+    # 'npm ci' strictly uses package-lock.json for deterministic builds
+    - name: Install Dependencies
+      run: npm ci
+
+    # STEP 4: RUN API TESTS WITH COVERAGE
+    # We modified the test script in package.json to use nyc
     - name: Run API Tests
       run: npm test
+
+    # STEP 5: UPLOAD COVERAGE REPORT AS ARTIFACT
+    # Saves the HTML coverage report so you can download it from GitHub
+    - name: Upload Coverage Report
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage-report
+        path: coverage/
+        retention-days: 5
